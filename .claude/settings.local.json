@@ -6,7 +6,10 @@
       "mcp__laravel-boost__get-absolute-url",
       "Bash(cp:*)",
       "Bash(rm:*)",
-      "mcp__laravel-boost__tinker"
+      "mcp__laravel-boost__tinker",
+      "mcp__laravel-boost__application-info",
+      "Bash(mv:*)",
+      "Bash(php artisan optimize:clear:*)"
     ]
   },
   "enableAllProjectMcpServers": true,
