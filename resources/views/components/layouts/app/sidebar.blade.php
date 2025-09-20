@@ -28,9 +28,9 @@
             @endcan
 
             <br>
-            <flux:navlist.group :heading="__('Accounting Dashboard')" class="grid" expandable>
+            <flux:navlist.group :heading="__('Financial Management')" class="grid" expandable>
                 <flux:navlist.item
-                    icon="briefcase"
+                    icon="building-office"
                     :href="route('accounts.index')"
                     :current="request()->routeIs('accounts.*')"
                     wire:navigate
@@ -39,56 +39,68 @@
                 </flux:navlist.item>
 
                 <flux:navlist.item
-                    icon="briefcase"
+                    icon="arrow-path"
                     :href="route('account-transfers.index')"
                     :current="request()->routeIs('account-transfers.*')"
                     wire:navigate
                 >
-                    {{ __('Manage Account Transfers') }}
+                    {{ __('Account Transfers') }}
                 </flux:navlist.item>
 
                 <flux:navlist.item
-                    icon="briefcase"
+                    icon="arrow-trending-up"
                     :href="route('incomes.index')"
                     :current="request()->routeIs('incomes.*')"
                     wire:navigate
                 >
-                    {{ __('Manage Income') }}
+                    {{ __('Income Records') }}
                 </flux:navlist.item>
 
                 <flux:navlist.item
-                    icon="briefcase"
+                    icon="arrow-trending-down"
                     :href="route('expenses.index')"
                     :current="request()->routeIs('expenses.*')"
                     wire:navigate
                 >
-                    {{ __('Manage Expense') }}
+                    {{ __('Expense Records') }}
                 </flux:navlist.item>
             </flux:navlist.group>
 
             <br>
-            <flux:navlist.group :heading="__('Fuel Dashboard')" class="grid" expandable>
-                {{-- Fuel (works with either fuel.* or dashboard.fuel.* thanks to web.php) --}}
+            <flux:navlist.group :heading="__('Fuel Management')" class="grid" expandable>
+                {{-- Fuel Types --}}
                 <flux:navlist.item
-                    icon="briefcase"
+                    icon="beaker"
                     :href="route('fuel.index')"
                     :current="request()->routeIs('fuel.*') || request()->routeIs('dashboard.fuel.*')"
                     wire:navigate
                 >
-                    {{ __('Manage Fuel') }}
+                    {{ __('Fuel Types') }}
                 </flux:navlist.item>
 
+                {{-- Meter Readings --}}
                 <flux:navlist.item
-                    icon="briefcase"
+                    icon="chart-bar"
+                    :href="route('fuel.meter-readings.index')"
+                    :current="request()->routeIs('fuel.meter-readings.*')"
+                    wire:navigate
+                >
+                    {{ __('Meter Readings') }}
+                </flux:navlist.item>
+
+                {{-- Pumps --}}
+                <flux:navlist.item
+                    icon="cog"
                     :href="route('pump.index')"
                     :current="request()->routeIs('pump.*')"
                     wire:navigate
                 >
-                    {{ __('Manage Pump') }}
+                    {{ __('Pumps') }}
                 </flux:navlist.item>
 
+                {{-- Pump Records --}}
                 <flux:navlist.item
-                    icon="briefcase"
+                    icon="clipboard-document-list"
                     :href="route('pump-records.index')"
                     :current="request()->routeIs('pump-records.*')"
                     wire:navigate
@@ -96,8 +108,9 @@
                     {{ __('Pump Records') }}
                 </flux:navlist.item>
 
+                {{-- Fuel Purchases --}}
                 <flux:navlist.item
-                    icon="briefcase"
+                    icon="shopping-cart"
                     :href="route('fuel-purchases.index')"
                     :current="request()->routeIs('fuel-purchases.*')"
                     wire:navigate
@@ -105,8 +118,9 @@
                     {{ __('Fuel Purchases') }}
                 </flux:navlist.item>
 
+                {{-- Fuel Adjustments --}}
                 <flux:navlist.item
-                    icon="briefcase"
+                    icon="adjustments-horizontal"
                     :href="route('fuel-adjustments.index')"
                     :current="request()->routeIs('fuel-adjustments.*')"
                     wire:navigate
@@ -116,26 +130,44 @@
             </flux:navlist.group>
 
             <br>
-            <flux:navlist.group :heading="__('Supplier Details')" class="grid" expandable>
+            <flux:navlist.group :heading="__('Business Partners')" class="grid" expandable>
                 <flux:navlist.item
-                    icon="briefcase"
+                    icon="truck"
                     :href="route('supplier.index')"
                     :current="request()->routeIs('supplier.*')"
                     wire:navigate
                 >
-                    {{ __('Manage Supplier') }}
+                    {{ __('Suppliers') }}
                 </flux:navlist.item>
             </flux:navlist.group>
 
             <br>
-            <flux:navlist.group :heading="__('Staff Details')" class="grid" expandable>
+            <flux:navlist.group :heading="__('Human Resources')" class="grid" expandable>
                 <flux:navlist.item
-                    icon="briefcase"
+                    icon="users"
                     :href="route('staff.index')"
                     :current="request()->routeIs('staff.*')"
                     wire:navigate
                 >
-                    {{ __('Manage Staffs') }}
+                    {{ __('Staff Management') }}
+                </flux:navlist.item>
+
+                <flux:navlist.item
+                    icon="user-group"
+                    :href="route('users.index')"
+                    :current="request()->routeIs('users.*')"
+                    wire:navigate
+                >
+                    {{ __('User Management') }}
+                </flux:navlist.item>
+
+                <flux:navlist.item
+                    icon="shield-check"
+                    :href="route('roles.index')"
+                    :current="request()->routeIs('roles.*')"
+                    wire:navigate
+                >
+                    {{ __('Roles & Permissions') }}
                 </flux:navlist.item>
             </flux:navlist.group>
 

@@ -1,26 +1,25 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\{
-    AccountController,
-    AccountTransferController,
-    DashboardController,
-    FuelController,
-    FuelPurchaseController,
-    FuelAdjustmentController,
-    IncomeController,
-    ExpenseController,
-    PumpController,
-    PumpRecordController,
-    SupplierController,
-    UserController,
-    RoleController,
-    StaffController
-};
-use App\Livewire\Settings\Profile;
-use App\Livewire\Settings\Password;
+use App\Http\Controllers\AccountController;
+use App\Http\Controllers\AccountTransferController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\ExpenseController;
+use App\Http\Controllers\FuelAdjustmentController;
+use App\Http\Controllers\FuelController;
+use App\Http\Controllers\FuelPurchaseController;
+use App\Http\Controllers\IncomeController;
+use App\Http\Controllers\MeterReadingController;
+use App\Http\Controllers\PumpController;
+use App\Http\Controllers\PumpRecordController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\StaffController;
+use App\Http\Controllers\SupplierController;
+use App\Http\Controllers\UserController;
 use App\Livewire\Settings\Appearance;
+use App\Livewire\Settings\Password;
+use App\Livewire\Settings\Profile;
 use App\Models\Pump;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,6 +28,7 @@ use App\Models\Pump;
 */
 Route::get('/pumps/{pump}/fuel', function (Pump $pump) {
     $fuel = $pump->fuel;
+
     return $fuel
         ? response()->json(['id' => $fuel->id, 'name' => $fuel->name])
         : response()->json(['id' => null, 'name' => 'N/A']);
@@ -70,22 +70,26 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     /*
     |--------------------------------------------------------------------------
-    | Fuel System
+    | Fuel Management System
     |--------------------------------------------------------------------------
-    | Provide BOTH name sets for Fuel:
-    |   - dashboard.fuel.*   → used by your controller redirects
-    |   - fuel.*             → legacy references in views/links (kept for compatibility)
+    | Organized fuel management routes with consistent naming and structure
     */
 
-    // URLs under /dashboard/fuel with names dashboard.fuel.*
+    // Meter Readings (must come BEFORE the fuel resource routes to avoid conflicts)
+    Route::resource('dashboard/fuel/meter-readings', MeterReadingController::class)->names('fuel.meter-readings');
+    Route::patch('dashboard/fuel/meter-readings/{meterReading}/verify', [MeterReadingController::class, 'verify'])->name('fuel.meter-readings.verify');
+
+    // Fuel Types Management (provide both naming conventions)
     Route::resource('dashboard/fuel', FuelController::class)->names('dashboard.fuel');
+    Route::resource('fuel', FuelController::class)->names('fuel'); // Legacy compatibility
 
-    // Parallel URLs under /fuel with names fuel.* (auth-protected)
-    Route::resource('fuel', FuelController::class)->names('fuel');
-
-    // Other fuel-related resources keep their existing (unprefixed) names
+    // Pump Management
     Route::resource('dashboard/pump', PumpController::class)->names('pump');
+
+    // Pump Operations
     Route::resource('dashboard/pump-records', PumpRecordController::class)->names('pump-records');
+
+    // Fuel Operations
     Route::resource('dashboard/fuel-purchases', FuelPurchaseController::class)->names('fuel-purchases');
     Route::resource('dashboard/fuel-adjustments', FuelAdjustmentController::class)->names('fuel-adjustments');
 
@@ -106,4 +110,4 @@ Route::get('/', function () {
     return view('welcome');
 })->name('home');
 
-require __DIR__ . '/auth.php';
+require __DIR__.'/auth.php';

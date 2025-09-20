@@ -3,15 +3,32 @@
 
         <div class="flex items-center justify-between">
             <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Fuel Records</h2>
-            <a href="{{ route('fuel.create') }}"
-               class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white shadow-sm transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:ring-offset-gray-900">
-                + Add Fuel
-            </a>
+            <div class="flex space-x-3">
+                <a href="{{ route('fuel.meter-readings.index') }}"
+                   class="inline-flex items-center rounded-md bg-green-600 px-4 py-2 text-white shadow-sm transition hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 dark:ring-offset-gray-900">
+                    📊 Meter Readings
+                </a>
+                <a href="{{ route('fuel.create') }}"
+                   class="inline-flex items-center rounded-md bg-indigo-600 px-4 py-2 text-white shadow-sm transition hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:ring-offset-gray-900">
+                    + Add Fuel
+                </a>
+            </div>
         </div>
 
         @if (session('success'))
             <div class="rounded-md bg-green-100 px-4 py-3 text-sm text-green-800 dark:bg-green-800 dark:text-green-100">
                 {{ session('success') }}
+            </div>
+        @endif
+
+        @if(isset($todayMeterReadings) && $todayMeterReadings->count() > 0)
+            <div class="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                <h3 class="text-lg font-semibold text-blue-900 dark:text-blue-100 mb-2">Today's Meter Readings</h3>
+                <p class="text-sm text-blue-700 dark:text-blue-300 mb-2">{{ $todayMeterReadings->count() }} readings recorded today</p>
+                <div class="text-sm text-blue-600 dark:text-blue-400">
+                    Total dispensed: {{ number_format($todayMeterReadings->sum('total_dispensed'), 2) }}L |
+                    Total amount: Rs.{{ number_format($todayMeterReadings->sum('total_amount'), 2) }}
+                </div>
             </div>
         @endif
 

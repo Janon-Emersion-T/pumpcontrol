@@ -19,7 +19,7 @@ class MeterReadingController extends Controller
         $todayReadings = MeterReading::whereDate('reading_date', today())->count();
         $unverifiedReadings = MeterReading::unverified()->count();
 
-        return view('dashboard.meter_readings.index', compact('meterReadings', 'todayReadings', 'unverifiedReadings'));
+        return view('dashboard.fuel.meter_readings.index', compact('meterReadings', 'todayReadings', 'unverifiedReadings'));
     }
 
     public function create()
@@ -27,7 +27,7 @@ class MeterReadingController extends Controller
         $pumps = Pump::with('fuel')->where('is_active', true)->get();
         $fuels = Fuel::all();
 
-        return view('dashboard.meter_readings.create', compact('pumps', 'fuels'));
+        return view('dashboard.fuel.meter_readings.create', compact('pumps', 'fuels'));
     }
 
     public function store(Request $request)
@@ -66,14 +66,14 @@ class MeterReadingController extends Controller
             'notes' => $request->notes,
         ]);
 
-        return redirect()->route('meter-readings.index')->with('success', 'Meter reading recorded successfully.');
+        return redirect()->route('fuel.meter-readings.index')->with('success', 'Meter reading recorded successfully.');
     }
 
     public function show(MeterReading $meterReading)
     {
         $meterReading->load(['pump.fuel', 'user', 'verifiedBy']);
 
-        return view('dashboard.meter_readings.show', compact('meterReading'));
+        return view('dashboard.fuel.meter_readings.show', compact('meterReading'));
     }
 
     public function edit(MeterReading $meterReading)
@@ -81,7 +81,7 @@ class MeterReadingController extends Controller
         $pumps = Pump::with('fuel')->where('is_active', true)->get();
         $fuels = Fuel::all();
 
-        return view('dashboard.meter_readings.edit', compact('meterReading', 'pumps', 'fuels'));
+        return view('dashboard.fuel.meter_readings.edit', compact('meterReading', 'pumps', 'fuels'));
     }
 
     public function update(Request $request, MeterReading $meterReading)
@@ -119,14 +119,14 @@ class MeterReadingController extends Controller
             'notes' => $request->notes,
         ]);
 
-        return redirect()->route('meter-readings.index')->with('success', 'Meter reading updated successfully.');
+        return redirect()->route('fuel.meter-readings.index')->with('success', 'Meter reading updated successfully.');
     }
 
     public function destroy(MeterReading $meterReading)
     {
         $meterReading->delete();
 
-        return redirect()->route('meter-readings.index')->with('success', 'Meter reading deleted successfully.');
+        return redirect()->route('fuel.meter-readings.index')->with('success', 'Meter reading deleted successfully.');
     }
 
     public function verify(MeterReading $meterReading)
