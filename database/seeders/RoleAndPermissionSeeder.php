@@ -22,6 +22,15 @@ class RoleAndPermissionSeeder extends Seeder
             ]
         );
 
+        $user = User::firstOrCreate(
+            ['email' => 'pumpcontroller@hostmysite.com'],
+            [
+                'name' => 'Pump Control Admin',
+                'password' => Hash::make('Pump@Controller@1234'),
+                'email_verified_at' => now()
+            ]
+        );
+
         // Sample permissions
         $permissions = [
             'dashboard',
