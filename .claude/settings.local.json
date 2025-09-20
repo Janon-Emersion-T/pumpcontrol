@@ -13,7 +13,9 @@
       "Bash(php artisan make:migration:*)",
       "Bash(php artisan migrate:*)",
       "Bash(php artisan test:*)",
-      "Bash(vendor/bin/pint:*)"
+      "Bash(vendor/bin/pint:*)",
+      "Bash(php artisan make:model:*)",
+      "Bash(php artisan make:controller:*)"
     ]
   },
   "enableAllProjectMcpServers": true,

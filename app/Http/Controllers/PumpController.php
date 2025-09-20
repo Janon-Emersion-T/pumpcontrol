@@ -2,21 +2,29 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Pump;
 use App\Models\Fuel;
+use App\Models\MeterReading;
+use App\Models\Pump;
 use Illuminate\Http\Request;
 
 class PumpController extends Controller
 {
     public function index()
     {
-        $pumps = Pump::with('fuel')->latest()->paginate(10);
-        return view('dashboard.pump.index', compact('pumps'));
+        $pumps = Pump::with(['fuel', 'latestMeterReading', 'meterReadings' => function ($query) {
+            $query->whereDate('reading_date', today())->latest();
+        }])->latest()->paginate(10);
+
+        $todayReadingsCount = MeterReading::whereDate('reading_date', today())->count();
+        $unverifiedReadings = MeterReading::unverified()->count();
+
+        return view('dashboard.pump.index', compact('pumps', 'todayReadingsCount', 'unverifiedReadings'));
     }
 
     public function create()
     {
         $fuels = Fuel::all();
+
         return view('dashboard.pump.create', compact('fuels'));
     }
 
@@ -39,12 +47,27 @@ class PumpController extends Controller
 
     public function show(Pump $pump)
     {
-        return view('dashboard.pump.show', compact('pump'));
+        $pump->load(['fuel', 'meterReadings' => function ($query) {
+            $query->with(['user', 'verifiedBy'])
+                ->latest('reading_date')
+                ->limit(30);
+        }]);
+
+        $todayMeterReadings = $pump->meterReadings()
+            ->whereDate('reading_date', today())
+            ->with(['user', 'verifiedBy'])
+            ->get();
+
+        $totalDispensedToday = $todayMeterReadings->sum('total_dispensed');
+        $totalAmountToday = $todayMeterReadings->sum('total_amount');
+
+        return view('dashboard.pump.show', compact('pump', 'todayMeterReadings', 'totalDispensedToday', 'totalAmountToday'));
     }
 
     public function edit(Pump $pump)
     {
         $fuels = Fuel::all();
+
         return view('dashboard.pump.edit', compact('pump', 'fuels'));
     }
 

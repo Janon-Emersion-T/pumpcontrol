@@ -15,4 +15,24 @@ class Fuel extends Model
         'stock_litres',
         'description',
     ];
+
+    public function pumps()
+    {
+        return $this->hasMany(Pump::class);
+    }
+
+    public function meterReadings()
+    {
+        return $this->hasMany(MeterReading::class);
+    }
+
+    public function fuelAdjustments()
+    {
+        return $this->hasMany(FuelAdjustment::class);
+    }
+
+    public function fuelPurchases()
+    {
+        return $this->hasMany(FuelPurchase::class);
+    }
 }

@@ -3,16 +3,17 @@
 namespace App\Models;
 
 use Illuminate\Contracts\Auth\MustVerifyEmail;
-use Spatie\Permission\Traits\HasRoles;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Str;
+use Spatie\Permission\Traits\HasRoles;
 
 class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
     use HasFactory, Notifiable;
+
     use HasRoles;
 
     /**
@@ -59,5 +60,15 @@ class User extends Authenticatable implements MustVerifyEmail
             ->take(2)
             ->map(fn ($word) => Str::substr($word, 0, 1))
             ->implode('');
+    }
+
+    public function meterReadings()
+    {
+        return $this->hasMany(MeterReading::class);
+    }
+
+    public function verifiedMeterReadings()
+    {
+        return $this->hasMany(MeterReading::class, 'verified_by');
     }
 }

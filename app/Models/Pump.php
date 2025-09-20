@@ -39,4 +39,14 @@ class Pump extends Model
     {
         return $this->hasMany(FuelPurchase::class);
     }
+
+    public function meterReadings()
+    {
+        return $this->hasMany(MeterReading::class);
+    }
+
+    public function latestMeterReading()
+    {
+        return $this->hasOne(MeterReading::class)->latestOfMany('reading_date');
+    }
 }

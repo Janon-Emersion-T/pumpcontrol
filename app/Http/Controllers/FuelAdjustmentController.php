@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\FuelAdjustment;
+use App\Models\MeterReading;
 use App\Models\Pump;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,9 +14,26 @@ class FuelAdjustmentController extends Controller
 {
     public function index()
     {
-        $adjustments = FuelAdjustment::with(['pump', 'fuel'])->orderByDesc('adjusted_at')->paginate(20);
+        $adjustments = FuelAdjustment::with(['pump', 'fuel', 'user'])
+            ->orderByDesc('adjusted_at')
+            ->paginate(20);
 
-        return view('dashboard.fuel_adjustments.index', compact('adjustments'));
+        $relatedMeterReadings = MeterReading::with(['pump', 'fuel', 'user'])
+            ->whereIn('pump_id', $adjustments->pluck('pump_id')->unique())
+            ->latest('reading_date')
+            ->limit(10)
+            ->get();
+
+        $adjustmentSummary = FuelAdjustment::selectRaw('
+            type,
+            COUNT(*) as count,
+            SUM(liters) as total_liters
+        ')
+            ->whereDate('adjusted_at', today())
+            ->groupBy('type')
+            ->get();
+
+        return view('dashboard.fuel_adjustments.index', compact('adjustments', 'relatedMeterReadings', 'adjustmentSummary'));
     }
 
     public function create()
@@ -92,7 +110,23 @@ class FuelAdjustmentController extends Controller
 
     public function show(FuelAdjustment $fuelAdjustment)
     {
-        return view('dashboard.fuel_adjustments.show', compact('fuelAdjustment'));
+        $fuelAdjustment->load(['pump.fuel', 'user']);
+
+        $relatedMeterReadings = MeterReading::where('pump_id', $fuelAdjustment->pump_id)
+            ->whereDate('reading_date', $fuelAdjustment->adjusted_at)
+            ->with(['user', 'verifiedBy'])
+            ->get();
+
+        $meterReadingsAroundDate = MeterReading::where('pump_id', $fuelAdjustment->pump_id)
+            ->whereBetween('reading_date', [
+                $fuelAdjustment->adjusted_at->subDays(3),
+                $fuelAdjustment->adjusted_at->addDays(3),
+            ])
+            ->with(['user', 'verifiedBy'])
+            ->orderBy('reading_date')
+            ->get();
+
+        return view('dashboard.fuel_adjustments.show', compact('fuelAdjustment', 'relatedMeterReadings', 'meterReadingsAroundDate'));
     }
 
     public function edit(FuelAdjustment $fuelAdjustment)

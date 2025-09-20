@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Account;
 use App\Models\FuelPurchase;
 use App\Models\Income;
+use App\Models\MeterReading;
 use App\Models\Pump;
 use App\Models\PumpRecord;
 use App\Models\Staff;
@@ -20,7 +21,15 @@ class PumpRecordController extends Controller
             ->orderByDesc('record_date')
             ->paginate(15);
 
-        return view('dashboard.pump_records.index', compact('records'));
+        $recentMeterReadings = MeterReading::with(['pump', 'fuel', 'user'])
+            ->latest('reading_date')
+            ->limit(10)
+            ->get();
+
+        $todayMeterReadingsCount = MeterReading::whereDate('reading_date', today())->count();
+        $unverifiedReadingsCount = MeterReading::unverified()->count();
+
+        return view('dashboard.pump_records.index', compact('records', 'recentMeterReadings', 'todayMeterReadingsCount', 'unverifiedReadingsCount'));
     }
 
     public function create()
@@ -105,7 +114,14 @@ class PumpRecordController extends Controller
 
     public function show(PumpRecord $pumpRecord)
     {
-        return view('dashboard.pump_records.show', compact('pumpRecord'));
+        $pumpRecord->load(['pump.fuel', 'staff']);
+
+        $relatedMeterReadings = MeterReading::where('pump_id', $pumpRecord->pump_id)
+            ->whereDate('reading_date', $pumpRecord->record_date)
+            ->with(['user', 'verifiedBy'])
+            ->get();
+
+        return view('dashboard.pump_records.show', compact('pumpRecord', 'relatedMeterReadings'));
     }
 
     public function edit(PumpRecord $pumpRecord)

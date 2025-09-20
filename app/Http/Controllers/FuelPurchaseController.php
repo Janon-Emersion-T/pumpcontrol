@@ -6,6 +6,7 @@ use App\Models\Account;
 use App\Models\Expense;
 use App\Models\Fuel;
 use App\Models\FuelPurchase;
+use App\Models\MeterReading;
 use App\Models\Pump;
 use App\Models\Supplier;
 use Illuminate\Http\Request;
@@ -16,9 +17,30 @@ class FuelPurchaseController extends Controller
 {
     public function index()
     {
-        $purchases = FuelPurchase::with(['pump', 'fuel', 'supplier'])->orderByDesc('purchase_date')->paginate(20);
+        $purchases = FuelPurchase::with(['pump', 'fuel', 'supplier'])
+            ->orderByDesc('purchase_date')
+            ->paginate(20);
 
-        return view('dashboard.fuel_purchases.index', compact('purchases'));
+        $relatedMeterReadings = MeterReading::with(['pump', 'fuel', 'user'])
+            ->whereIn('pump_id', $purchases->pluck('pump_id')->unique())
+            ->latest('reading_date')
+            ->limit(10)
+            ->get();
+
+        $fuelStockComparison = Fuel::with(['meterReadings' => function ($query) {
+            $query->whereDate('reading_date', today());
+        }])->get()->map(function ($fuel) {
+            $todayDispensed = $fuel->meterReadings->sum('total_dispensed');
+
+            return [
+                'fuel' => $fuel,
+                'stock_liters' => $fuel->stock_litres,
+                'dispensed_today' => $todayDispensed,
+                'estimated_remaining' => max(0, $fuel->stock_litres - $todayDispensed),
+            ];
+        });
+
+        return view('dashboard.fuel_purchases.index', compact('purchases', 'relatedMeterReadings', 'fuelStockComparison'));
     }
 
     public function create()
@@ -80,7 +102,23 @@ class FuelPurchaseController extends Controller
 
     public function show(FuelPurchase $fuelPurchase)
     {
-        return view('dashboard.fuel_purchases.show', compact('fuelPurchase'));
+        $fuelPurchase->load(['pump.fuel', 'supplier', 'user']);
+
+        $relatedMeterReadings = MeterReading::where('pump_id', $fuelPurchase->pump_id)
+            ->whereDate('reading_date', $fuelPurchase->purchase_date)
+            ->with(['user', 'verifiedBy'])
+            ->get();
+
+        $pumpMeterReadingsBeforeAfter = MeterReading::where('pump_id', $fuelPurchase->pump_id)
+            ->whereBetween('reading_date', [
+                $fuelPurchase->purchase_date->subDays(3),
+                $fuelPurchase->purchase_date->addDays(3),
+            ])
+            ->with(['user', 'verifiedBy'])
+            ->orderBy('reading_date')
+            ->get();
+
+        return view('dashboard.fuel_purchases.show', compact('fuelPurchase', 'relatedMeterReadings', 'pumpMeterReadingsBeforeAfter'));
     }
 
     public function edit(FuelPurchase $fuelPurchase)
