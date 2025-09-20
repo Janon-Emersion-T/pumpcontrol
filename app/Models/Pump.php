@@ -19,11 +19,24 @@ class Pump extends Model
     {
         return $this->belongsTo(Fuel::class);
     }
-   
-    public function currentFuel()
+
+    public function currentMeterReading()
     {
-        return $this->hasOne(\App\Models\CurrentFuelLevel::class);
+        return $this->hasOne(PumpMeterReading::class);
     }
 
+    public function pumpRecords()
+    {
+        return $this->hasMany(PumpRecord::class);
+    }
 
+    public function fuelAdjustments()
+    {
+        return $this->hasMany(FuelAdjustment::class);
+    }
+
+    public function fuelPurchases()
+    {
+        return $this->hasMany(FuelPurchase::class);
+    }
 }

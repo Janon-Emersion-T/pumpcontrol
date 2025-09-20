@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\FuelPurchase;
-use App\Models\Expense;
-use App\Models\Pump;
-use App\Models\Fuel;
-use App\Models\Supplier;
 use App\Models\Account;
+use App\Models\Expense;
+use App\Models\Fuel;
+use App\Models\FuelPurchase;
+use App\Models\Pump;
+use App\Models\Supplier;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
@@ -17,6 +17,7 @@ class FuelPurchaseController extends Controller
     public function index()
     {
         $purchases = FuelPurchase::with(['pump', 'fuel', 'supplier'])->orderByDesc('purchase_date')->paginate(20);
+
         return view('dashboard.fuel_purchases.index', compact('purchases'));
     }
 
@@ -24,6 +25,7 @@ class FuelPurchaseController extends Controller
     {
         $pumps = Pump::with('fuel')->get();
         $suppliers = Supplier::all();
+
         return view('dashboard.fuel_purchases.create', compact('pumps', 'suppliers'));
     }
 
@@ -62,28 +64,18 @@ class FuelPurchaseController extends Controller
                 'amount' => $totalCost,
                 'description' => "Fuel Purchase - Pump #{$request->pump_id} on {$request->purchase_date}",
                 'date' => $request->purchase_date,
-                'reference' => 'fuel_purchase:' . $purchase->id,
+                'reference' => 'fuel_purchase:'.$purchase->id,
             ]);
 
             if ($account->type === 'Expense') {
                 $account->decrement('current_balance', $totalCost);
             }
 
-            // Update current fuel level
-            $pump = Pump::with('currentFuel')->findOrFail($request->pump_id);
-
-            if ($pump->currentFuel) {
-                $pump->currentFuel()->update([
-                    'current_fuel' => DB::raw("current_fuel + ({$request->liters})")
-                ]);
-            } else {
-                $pump->currentFuel()->create([
-                    'current_fuel' => $request->liters
-                ]);
-            }
+            // Note: Fuel purchases don't affect meter readings
+            // Meter readings track fuel dispensed, not fuel received
         });
 
-        return redirect()->route('fuel-purchases.index')->with('success', 'Fuel purchase, expense, and fuel level updated.');
+        return redirect()->route('fuel-purchases.index')->with('success', 'Fuel purchase and expense recorded.');
     }
 
     public function show(FuelPurchase $fuelPurchase)
@@ -95,6 +87,7 @@ class FuelPurchaseController extends Controller
     {
         $pumps = Pump::with('fuel')->get();
         $suppliers = Supplier::all();
+
         return view('dashboard.fuel_purchases.edit', compact('fuelPurchase', 'pumps', 'suppliers'));
     }
 
@@ -114,7 +107,7 @@ class FuelPurchaseController extends Controller
             $newAmount = $request->liters * $request->price_per_liter;
 
             $account = Account::where('code', '2001')->firstOrFail();
-            $reference = 'fuel_purchase:' . $fuelPurchase->id;
+            $reference = 'fuel_purchase:'.$fuelPurchase->id;
 
             $expense = Expense::where('reference', $reference)->first();
             if ($expense) {
@@ -138,29 +131,18 @@ class FuelPurchaseController extends Controller
                 'notes' => $request->notes,
             ]);
 
-            // Adjust fuel level
-            $pump = $fuelPurchase->pump;
-            $netLiters = $request->liters - $oldLiters;
-
-            if ($pump->currentFuel) {
-                $pump->currentFuel()->update([
-                    'current_fuel' => DB::raw("current_fuel + ({$netLiters})")
-                ]);
-            } else {
-                $pump->currentFuel()->create([
-                    'current_fuel' => $netLiters
-                ]);
-            }
+            // Note: Fuel purchases don't affect meter readings
+            // Meter readings track fuel dispensed, not fuel received
         });
 
-        return redirect()->route('fuel-purchases.index')->with('success', 'Fuel purchase, accounting, and fuel level updated.');
+        return redirect()->route('fuel-purchases.index')->with('success', 'Fuel purchase and accounting updated.');
     }
 
     public function destroy(FuelPurchase $fuelPurchase)
     {
         DB::transaction(function () use ($fuelPurchase) {
             $account = Account::where('code', '2001')->firstOrFail();
-            $reference = 'fuel_purchase:' . $fuelPurchase->id;
+            $reference = 'fuel_purchase:'.$fuelPurchase->id;
 
             $expense = Expense::where('reference', $reference)->first();
             if ($expense) {
@@ -171,17 +153,12 @@ class FuelPurchaseController extends Controller
                 }
             }
 
-            // Revert fuel level
-            $pump = $fuelPurchase->pump;
-            if ($pump->currentFuel) {
-                $pump->currentFuel()->update([
-                    'current_fuel' => DB::raw("current_fuel - ({$fuelPurchase->liters})")
-                ]);
-            }
+            // Note: Fuel purchases don't affect meter readings
+            // Meter readings track fuel dispensed, not fuel received
 
             $fuelPurchase->delete();
         });
 
-        return redirect()->route('fuel-purchases.index')->with('success', 'Fuel purchase, expense, and fuel level reverted.');
+        return redirect()->route('fuel-purchases.index')->with('success', 'Fuel purchase and expense deleted.');
     }
 }

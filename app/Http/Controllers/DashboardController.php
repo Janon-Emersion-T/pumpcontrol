@@ -8,10 +8,10 @@ class DashboardController extends Controller
 {
     public function index()
     {
-        // Load pumps with their associated fuel and current fuel level
+        // Load pumps with their associated fuel and current meter reading
         $pumps = Pump::with([
             'fuel:id,name',
-            'currentFuel:id,pump_id,current_fuel'
+            'currentMeterReading:id,pump_id,current_meter_reading,previous_meter_reading',
         ])->get();
 
         return view('dashboard', compact('pumps'));

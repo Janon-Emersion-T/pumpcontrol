@@ -31,7 +31,7 @@
                     <option value="">Select pump</option>
                     @foreach ($pumps as $pump)
                         <option value="{{ $pump->id }}"
-                                data-current-fuel="{{ $pump->currentFuel->current_fuel ?? 0 }}"
+                                data-current-meter="{{ $pump->currentMeterReading->current_meter_reading ?? 0 }}"
                                 data-price="{{ $pump->fuel->price_per_litre ?? 0 }}"
                                 {{ old('pump_id') == $pump->id ? 'selected' : '' }}>
                             {{ $pump->name }} ({{ $pump->fuel->name }})
@@ -52,7 +52,7 @@
                 <div>
                     <label for="opening_meter" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
                         Opening Meter (Auto)
-                        <span class="text-xs text-gray-400 dark:text-gray-500">(from current fuel)</span>
+                        <span class="text-xs text-gray-400 dark:text-gray-500">(from previous reading)</span>
                     </label>
                     <input type="number" step="0.01" name="opening_meter" id="opening_meter"
                            readonly
@@ -61,8 +61,8 @@
                 </div>
                 <div>
                     <label for="closing_meter" class="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1 flex justify-between items-center">
-                        <span>Closing Meter</span>
-                        <span class="text-xs text-gray-400 dark:text-gray-500 italic">Can be lower if fuel purchased</span>
+                        <span>Closing Meter <span class="text-red-500">*</span></span>
+                        <span class="text-xs text-gray-400 dark:text-gray-500 italic">Must be higher than opening meter</span>
                     </label>
                     <input type="number" step="0.01" name="closing_meter" id="closing_meter" value="{{ old('closing_meter') }}" required
                            class="w-full rounded-md border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-800 dark:text-white shadow-sm">
@@ -117,12 +117,12 @@
             const pumpSelect = document.getElementById('pump_id');
             const selected = pumpSelect.options[pumpSelect.selectedIndex];
 
-            const currentFuel = selected.getAttribute('data-current-fuel') || 0;
+            const currentMeter = selected.getAttribute('data-current-meter') || 0;
             const price = selected.getAttribute('data-price') || 0;
 
-            document.getElementById('opening_meter').value = parseFloat(currentFuel).toFixed(2);
+            document.getElementById('opening_meter').value = parseFloat(currentMeter).toFixed(2);
             document.getElementById('price_per_litre').value = parseFloat(price).toFixed(2);
-            
+
             calculateTotalSales();
         }
 
@@ -131,7 +131,7 @@
             const closingMeter = parseFloat(document.getElementById('closing_meter').value) || 0;
             const pricePerLitre = parseFloat(document.getElementById('price_per_litre').value) || 0;
 
-            const litresSold = openingMeter - closingMeter;
+            const litresSold = closingMeter - openingMeter;
             const totalSales = litresSold > 0 ? litresSold * pricePerLitre : 0;
 
             document.getElementById('total_sales').value = totalSales.toFixed(2);

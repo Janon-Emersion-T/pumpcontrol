@@ -14,12 +14,14 @@ class FuelAdjustmentController extends Controller
     public function index()
     {
         $adjustments = FuelAdjustment::with(['pump', 'fuel'])->orderByDesc('adjusted_at')->paginate(20);
+
         return view('dashboard.fuel_adjustments.index', compact('adjustments'));
     }
 
     public function create()
     {
         $pumps = Pump::with('fuel')->get();
+
         return view('dashboard.fuel_adjustments.create', compact('pumps'));
     }
 
@@ -45,18 +47,8 @@ class FuelAdjustmentController extends Controller
                 'adjusted_at' => $request->adjusted_at,
             ]);
 
-            $pump = Pump::with('currentFuel')->findOrFail($request->pump_id);
-            $adjustedLiters = $request->type === 'gain' ? $request->liters : -$request->liters;
-
-            if ($pump->currentFuel) {
-                $pump->currentFuel()->update([
-                    'current_fuel' => DB::raw("current_fuel + ($adjustedLiters)")
-                ]);
-            } else {
-                $pump->currentFuel()->create([
-                    'current_fuel' => $adjustedLiters
-                ]);
-            }
+            // Note: Fuel adjustments don't affect meter readings
+            // Meter readings track fuel dispensed, not stock adjustments
         });
 
         return redirect()->route('fuel-adjustments.index')->with('success', 'Fuel adjustment recorded.');
@@ -72,21 +64,8 @@ class FuelAdjustmentController extends Controller
         ]);
 
         DB::transaction(function () use ($request, $fuelAdjustment) {
-            $pump = $fuelAdjustment->pump;
-
-            $previousAdjustment = $fuelAdjustment->type === 'gain' ? $fuelAdjustment->liters : -$fuelAdjustment->liters;
-            $newAdjustment = $request->type === 'gain' ? $request->liters : -$request->liters;
-            $netChange = $newAdjustment - $previousAdjustment;
-
-            if ($pump->currentFuel) {
-                $pump->currentFuel()->update([
-                    'current_fuel' => DB::raw("current_fuel + ($netChange)")
-                ]);
-            } else {
-                $pump->currentFuel()->create([
-                    'current_fuel' => $netChange
-                ]);
-            }
+            // Note: Fuel adjustments don't affect meter readings
+            // Meter readings track fuel dispensed, not stock adjustments
 
             $fuelAdjustment->update([
                 'liters' => $request->liters,
@@ -102,18 +81,8 @@ class FuelAdjustmentController extends Controller
     public function destroy(FuelAdjustment $fuelAdjustment)
     {
         DB::transaction(function () use ($fuelAdjustment) {
-            $pump = $fuelAdjustment->pump;
-            $revertLiters = $fuelAdjustment->type === 'gain' ? -$fuelAdjustment->liters : $fuelAdjustment->liters;
-
-            if ($pump->currentFuel) {
-                $pump->currentFuel()->update([
-                    'current_fuel' => DB::raw("current_fuel + ($revertLiters)")
-                ]);
-            } else {
-                $pump->currentFuel()->create([
-                    'current_fuel' => $revertLiters
-                ]);
-            }
+            // Note: Fuel adjustments don't affect meter readings
+            // Meter readings track fuel dispensed, not stock adjustments
 
             $fuelAdjustment->delete();
         });
@@ -129,6 +98,7 @@ class FuelAdjustmentController extends Controller
     public function edit(FuelAdjustment $fuelAdjustment)
     {
         $pumps = Pump::with('fuel')->get();
+
         return view('dashboard.fuel_adjustments.edit', compact('fuelAdjustment', 'pumps'));
     }
 }
