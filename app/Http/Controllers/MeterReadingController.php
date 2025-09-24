@@ -10,29 +10,44 @@ use Illuminate\Support\Facades\Auth;
 
 class MeterReadingController extends Controller
 {
+    /**
+     * Display a listing of the meter readings.
+     */
     public function index()
     {
         $meterReadings = MeterReading::with(['pump', 'fuel', 'user', 'verifiedBy'])
             ->latest('reading_date')
             ->paginate(20);
 
-        $todayReadings = MeterReading::whereDate('reading_date', today())->count();
+        $todayReadings = MeterReading::today()->count();
         $unverifiedReadings = MeterReading::unverified()->count();
 
         return view('dashboard.fuel.meter_readings.index', compact('meterReadings', 'todayReadings', 'unverifiedReadings'));
     }
 
+    /**
+     * Show the form for creating a new meter reading.
+     */
     public function create()
     {
         $pumps = Pump::with('fuel')->where('is_active', true)->get();
         $fuels = Fuel::all();
 
-        return view('dashboard.fuel.meter_readings.create', compact('pumps', 'fuels'));
+        // Prepare default opening readings for each pump
+        $defaultOpenings = [];
+        foreach ($pumps as $pump) {
+            $defaultOpenings[$pump->id] = MeterReading::lastClosingReading($pump->id);
+        }
+
+        return view('dashboard.fuel.meter_readings.create', compact('pumps', 'fuels', 'defaultOpenings'));
     }
 
+    /**
+     * Store a newly created meter reading in storage.
+     */
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'pump_id' => 'required|exists:pumps,id',
             'fuel_id' => 'required|exists:fuels,id',
             'opening_reading' => 'required|numeric|min:0',
@@ -44,38 +59,30 @@ class MeterReadingController extends Controller
             'notes' => 'nullable|string|max:1000',
         ]);
 
-        $totalDispensed = $request->closing_reading - $request->opening_reading;
-        $totalAmount = $totalDispensed * $request->price_per_liter;
-
-        if ($totalDispensed < 0) {
-            return back()->withErrors(['closing_reading' => 'Closing reading must be greater than opening reading.']);
+        if ($validated['closing_reading'] < $validated['opening_reading']) {
+            return back()->withErrors(['closing_reading' => 'Closing reading must be greater than opening reading.'])->withInput();
         }
 
         MeterReading::create([
-            'pump_id' => $request->pump_id,
-            'fuel_id' => $request->fuel_id,
+            ...$validated,
             'user_id' => Auth::id(),
-            'opening_reading' => $request->opening_reading,
-            'closing_reading' => $request->closing_reading,
-            'total_dispensed' => $totalDispensed,
-            'price_per_liter' => $request->price_per_liter,
-            'total_amount' => $totalAmount,
-            'reading_date' => $request->reading_date,
-            'reading_time' => $request->reading_time,
-            'shift' => $request->shift,
-            'notes' => $request->notes,
         ]);
 
         return redirect()->route('fuel.meter-readings.index')->with('success', 'Meter reading recorded successfully.');
     }
 
+    /**
+     * Display the specified meter reading.
+     */
     public function show(MeterReading $meterReading)
     {
         $meterReading->load(['pump.fuel', 'user', 'verifiedBy']);
-
         return view('dashboard.fuel.meter_readings.show', compact('meterReading'));
     }
 
+    /**
+     * Show the form for editing the specified meter reading.
+     */
     public function edit(MeterReading $meterReading)
     {
         $pumps = Pump::with('fuel')->where('is_active', true)->get();
@@ -84,9 +91,12 @@ class MeterReadingController extends Controller
         return view('dashboard.fuel.meter_readings.edit', compact('meterReading', 'pumps', 'fuels'));
     }
 
+    /**
+     * Update the specified meter reading in storage.
+     */
     public function update(Request $request, MeterReading $meterReading)
     {
-        $request->validate([
+        $validated = $request->validate([
             'pump_id' => 'required|exists:pumps,id',
             'fuel_id' => 'required|exists:fuels,id',
             'opening_reading' => 'required|numeric|min:0',
@@ -98,37 +108,27 @@ class MeterReadingController extends Controller
             'notes' => 'nullable|string|max:1000',
         ]);
 
-        $totalDispensed = $request->closing_reading - $request->opening_reading;
-        $totalAmount = $totalDispensed * $request->price_per_liter;
-
-        if ($totalDispensed < 0) {
-            return back()->withErrors(['closing_reading' => 'Closing reading must be greater than opening reading.']);
+        if ($validated['closing_reading'] < $validated['opening_reading']) {
+            return back()->withErrors(['closing_reading' => 'Closing reading must be greater than opening reading.'])->withInput();
         }
 
-        $meterReading->update([
-            'pump_id' => $request->pump_id,
-            'fuel_id' => $request->fuel_id,
-            'opening_reading' => $request->opening_reading,
-            'closing_reading' => $request->closing_reading,
-            'total_dispensed' => $totalDispensed,
-            'price_per_liter' => $request->price_per_liter,
-            'total_amount' => $totalAmount,
-            'reading_date' => $request->reading_date,
-            'reading_time' => $request->reading_time,
-            'shift' => $request->shift,
-            'notes' => $request->notes,
-        ]);
+        $meterReading->update($validated);
 
         return redirect()->route('fuel.meter-readings.index')->with('success', 'Meter reading updated successfully.');
     }
 
+    /**
+     * Remove the specified meter reading from storage.
+     */
     public function destroy(MeterReading $meterReading)
     {
         $meterReading->delete();
-
         return redirect()->route('fuel.meter-readings.index')->with('success', 'Meter reading deleted successfully.');
     }
 
+    /**
+     * Verify a meter reading.
+     */
     public function verify(MeterReading $meterReading)
     {
         $meterReading->update([

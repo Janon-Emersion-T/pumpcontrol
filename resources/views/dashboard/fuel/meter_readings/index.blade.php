@@ -1,6 +1,7 @@
 <x-layouts.app :title="__('Meter Readings')">
     <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl bg-white dark:bg-gray-900 p-6 shadow-lg">
 
+        <!-- Header -->
         <div class="flex items-center justify-between">
             <div>
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Meter Readings</h2>
@@ -12,6 +13,7 @@
             </a>
         </div>
 
+        <!-- Success Message -->
         @if (session('success'))
             <div class="rounded-md bg-green-100 px-4 py-3 text-sm text-green-800 dark:bg-green-800 dark:text-green-100">
                 {{ session('success') }}
@@ -34,6 +36,7 @@
             </div>
         </div>
 
+        <!-- Meter Readings Table -->
         <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
                 <thead class="bg-gray-50 dark:bg-gray-800">
@@ -54,7 +57,7 @@
                             <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-200">
                                 {{ $reading->reading_date->format('M j, Y') }}
                                 <br>
-                                <span class="text-xs text-gray-500">{{ $reading->reading_time->format('H:i') }}</span>
+                                <span class="text-xs text-gray-500">{{ $reading->reading_time }}</span>
                             </td>
                             <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">{{ $reading->pump->name }}</td>
                             <td class="px-4 py-3 text-sm text-gray-700 dark:text-gray-300">{{ $reading->fuel->name }}</td>
@@ -121,6 +124,7 @@
             </table>
         </div>
 
+        <!-- Pagination -->
         <div class="pt-4">
             {{ $meterReadings->links() }}
         </div>

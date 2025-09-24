@@ -13,9 +13,7 @@ class MeterReading extends Model
         'user_id',
         'opening_reading',
         'closing_reading',
-        'total_dispensed',
         'price_per_liter',
-        'total_amount',
         'reading_date',
         'reading_time',
         'shift',
@@ -25,21 +23,28 @@ class MeterReading extends Model
         'verified_by',
     ];
 
-    protected function casts(): array
+    protected $casts = [
+        'opening_reading' => 'decimal:3',
+        'closing_reading' => 'decimal:3',
+        'total_dispensed' => 'decimal:3',
+        'price_per_liter' => 'decimal:3',
+        'total_amount' => 'decimal:2',
+        'reading_date' => 'date',
+        'reading_time' => 'string',
+        'is_verified' => 'boolean',
+        'verified_at' => 'datetime',
+    ];
+
+    // Boot method to automatically calculate totals
+    protected static function booted()
     {
-        return [
-            'opening_reading' => 'decimal:3',
-            'closing_reading' => 'decimal:3',
-            'total_dispensed' => 'decimal:3',
-            'price_per_liter' => 'decimal:3',
-            'total_amount' => 'decimal:2',
-            'reading_date' => 'date',
-            'reading_time' => 'datetime:H:i',
-            'is_verified' => 'boolean',
-            'verified_at' => 'datetime',
-        ];
+        static::saving(function ($meterReading) {
+            $meterReading->total_dispensed = max(0, $meterReading->closing_reading - $meterReading->opening_reading);
+            $meterReading->total_amount = $meterReading->total_dispensed * $meterReading->price_per_liter;
+        });
     }
 
+    // Relationships
     public function pump(): BelongsTo
     {
         return $this->belongsTo(Pump::class);
@@ -60,6 +65,7 @@ class MeterReading extends Model
         return $this->belongsTo(User::class, 'verified_by');
     }
 
+    // Scopes
     public function scopeToday($query)
     {
         return $query->whereDate('reading_date', today());
@@ -88,5 +94,24 @@ class MeterReading extends Model
     public function scopeUnverified($query)
     {
         return $query->where('is_verified', false);
+    }
+
+    // Helper: Get last closing reading for a pump
+    public static function lastClosingReading(int $pumpId): float
+    {
+        $lastReading = self::where('pump_id', $pumpId)
+                           ->latest('reading_date')
+                           ->latest('reading_time')
+                           ->first();
+
+        return $lastReading ? $lastReading->closing_reading : 0.0;
+    }
+
+    // Optional: Manual calculation
+    public static function calculateTotals($opening, $closing, $price)
+    {
+        $totalDispensed = max(0, $closing - $opening);
+        $totalAmount = $totalDispensed * $price;
+        return [$totalDispensed, $totalAmount];
     }
 }
