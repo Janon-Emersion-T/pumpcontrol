@@ -1,6 +1,7 @@
 <x-layouts.app :title="__('Meter Reading Details')">
     <div class="flex h-full w-full flex-1 flex-col gap-6 rounded-xl bg-white dark:bg-gray-900 p-6 shadow-lg">
 
+        <!-- Header -->
         <div class="flex items-center justify-between">
             <div>
                 <h2 class="text-2xl font-bold text-gray-900 dark:text-white">Meter Reading Details</h2>
@@ -18,7 +19,9 @@
             </div>
         </div>
 
+        <!-- Grid Sections -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
             <!-- Basic Information -->
             <div class="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg">
                 <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Basic Information</h3>
@@ -133,9 +136,10 @@
                     @endif
                 </dl>
             </div>
+
         </div>
 
-        <!-- Notes -->
+        <!-- Notes Section -->
         @if($meterReading->notes)
             <div class="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg">
                 <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Notes</h3>
@@ -143,7 +147,7 @@
             </div>
         @endif
 
-        <!-- Timestamps -->
+        <!-- Record Timestamps -->
         <div class="bg-gray-50 dark:bg-gray-800 p-6 rounded-lg">
             <h3 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Record Information</h3>
             <dl class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -157,5 +161,6 @@
                 </div>
             </dl>
         </div>
+
     </div>
 </x-layouts.app>
