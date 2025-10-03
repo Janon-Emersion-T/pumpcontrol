@@ -3,7 +3,8 @@
     "allow": [
       "Bash(php artisan:*)",
       "Bash(php:*)",
-      "Bash(del cleanup_oils.php fix_pump_counts.php)"
+      "Bash(del cleanup_oils.php fix_pump_counts.php)",
+      "mcp__laravel-boost__list-routes"
     ]
   },
   "enableAllProjectMcpServers": true,
