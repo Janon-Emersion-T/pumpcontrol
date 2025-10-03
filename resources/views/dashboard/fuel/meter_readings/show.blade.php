@@ -40,7 +40,7 @@
                     </div>
                     <div>
                         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Reading Time</dt>
-                        <dd class="text-sm text-gray-900 dark:text-white">{{ $meterReading->reading_time->format('g:i A') }}</dd>
+                        <dd class="text-sm text-gray-900 dark:text-white">{{ \Carbon\Carbon::parse($meterReading->reading_time)->format('g:i A') }}</dd>
                     </div>
                     <div>
                         <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Shift</dt>

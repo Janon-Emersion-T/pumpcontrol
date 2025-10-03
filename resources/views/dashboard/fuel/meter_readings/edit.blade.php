@@ -98,7 +98,7 @@
                 <div>
                     <label for="reading_time" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Reading Time</label>
                     <input type="time" name="reading_time" id="reading_time"
-                           value="{{ old('reading_time', $meterReading->reading_time->format('H:i')) }}" required
+                           value="{{ old('reading_time', \Carbon\Carbon::parse($meterReading->reading_time)->format('H:i')) }}" required
                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 dark:border-gray-600 dark:bg-gray-700 dark:text-white">
                 </div>
 
