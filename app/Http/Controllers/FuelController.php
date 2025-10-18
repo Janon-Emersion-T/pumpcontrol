@@ -55,7 +55,14 @@ class FuelController extends Controller
             ->whereDate('reading_date', today())
             ->sum('total_dispensed');
 
-        return view('dashboard.fuel.show', compact('fuel', 'recentMeterReadings', 'totalDispensed'));
+        // Load price history
+        $priceHistory = $fuel->priceHistory()
+            ->with('user')
+            ->latest('effective_date')
+            ->limit(10)
+            ->get();
+
+        return view('dashboard.fuel.show', compact('fuel', 'recentMeterReadings', 'totalDispensed', 'priceHistory'));
     }
 
     public function edit(Fuel $fuel)

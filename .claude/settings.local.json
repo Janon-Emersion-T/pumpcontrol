@@ -4,7 +4,11 @@
       "Bash(php artisan:*)",
       "Bash(php:*)",
       "Bash(del cleanup_oils.php fix_pump_counts.php)",
-      "mcp__laravel-boost__list-routes"
+      "mcp__laravel-boost__list-routes",
+      "Bash(tree \"C:\\laragon\\www\\petrolshed\" -L 3 -I \"node_modules|vendor|.git\" --dirsfirst)",
+      "mcp__laravel-boost__application-info",
+      "mcp__laravel-boost__database-schema",
+      "mcp__laravel-boost__database-query"
     ]
   },
   "enableAllProjectMcpServers": true,

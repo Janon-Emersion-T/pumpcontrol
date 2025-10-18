@@ -6,6 +6,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\ExpenseController;
 use App\Http\Controllers\FuelAdjustmentController;
 use App\Http\Controllers\FuelController;
+use App\Http\Controllers\FuelPriceHistoryController;
 use App\Http\Controllers\FuelPurchaseController;
 use App\Http\Controllers\IncomeController;
 use App\Http\Controllers\MeterReadingController;
@@ -92,6 +93,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Fuel Operations
     Route::resource('dashboard/fuel-purchases', FuelPurchaseController::class)->names('fuel-purchases');
     Route::resource('dashboard/fuel-adjustments', FuelAdjustmentController::class)->names('fuel-adjustments');
+    Route::resource('dashboard/fuel-price-history', FuelPriceHistoryController::class)->names('fuel-price-history');
 
     /*
     |--------------------------------------------------------------------------

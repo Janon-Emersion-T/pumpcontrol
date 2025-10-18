@@ -36,6 +36,18 @@ class Fuel extends Model
         return $this->hasMany(FuelPurchase::class);
     }
 
+    public function priceHistory()
+    {
+        return $this->hasMany(FuelPriceHistory::class);
+    }
+
+    public function currentPriceHistory()
+    {
+        return $this->hasOne(FuelPriceHistory::class)
+            ->where('is_active', true)
+            ->latestOfMany('effective_date');
+    }
+
     // Scopes
     public function scopeLowStock($query, $threshold = 1000)
     {

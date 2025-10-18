@@ -127,6 +127,16 @@
                 >
                     {{ __('Fuel Adjustments') }}
                 </flux:navlist.item>
+
+                {{-- Fuel Price History --}}
+                <flux:navlist.item
+                    icon="currency-dollar"
+                    :href="route('fuel-price-history.index')"
+                    :current="request()->routeIs('fuel-price-history.*')"
+                    wire:navigate
+                >
+                    {{ __('Price History') }}
+                </flux:navlist.item>
             </flux:navlist.group>
 
             <br>

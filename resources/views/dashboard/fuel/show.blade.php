@@ -33,7 +33,66 @@
             </div>
         </div>
 
-        <div class="pt-6 flex justify-end gap-3">
+        <!-- Price History Section -->
+        <div class="pt-6 border-t border-gray-200 dark:border-gray-700">
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Price History</h3>
+                <a href="{{ route('fuel-price-history.create') }}"
+                   class="inline-flex items-center rounded-md bg-indigo-600 px-3 py-2 text-sm text-white hover:bg-indigo-700">
+                    Change Price
+                </a>
+            </div>
+
+            @if($priceHistory->count() > 0)
+                <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700">
+                    <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                        <thead class="bg-gray-50 dark:bg-gray-800">
+                            <tr>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Price/Litre</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Effective Date</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Changed By</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 dark:text-gray-300">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                            @foreach($priceHistory as $history)
+                                <tr class="{{ $history->is_active ? 'bg-green-50 dark:bg-green-900/20' : '' }}">
+                                    <td class="px-4 py-2 text-sm text-gray-900 dark:text-white">
+                                        Rs. {{ number_format($history->price_per_litre, 2) }}
+                                    </td>
+                                    <td class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">
+                                        {{ $history->effective_date->format('d M Y') }}
+                                    </td>
+                                    <td class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300">
+                                        {{ $history->user->name }}
+                                    </td>
+                                    <td class="px-4 py-2 text-sm">
+                                        @if($history->is_active)
+                                            <span class="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800 dark:bg-green-800 dark:text-green-100">
+                                                Active
+                                            </span>
+                                        @else
+                                            <span class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-600 dark:bg-gray-700 dark:text-gray-300">
+                                                Historical
+                                            </span>
+                                        @endif
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                    Showing latest 10 price changes. <a href="{{ route('fuel-price-history.index') }}" class="text-indigo-600 hover:text-indigo-500 dark:text-indigo-400">View all price history</a>
+                </p>
+            @else
+                <div class="rounded-lg border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 p-6 text-center">
+                    <p class="text-gray-500 dark:text-gray-400">No price history available</p>
+                </div>
+            @endif
+        </div>
+
+        <div class="pt-6 flex justify-end gap-3 border-t border-gray-200 dark:border-gray-700 mt-6">
             <a href="{{ route('fuel.edit', $fuel) }}"
                class="inline-flex items-center rounded-md bg-yellow-500 px-4 py-2 text-white hover:bg-yellow-600 dark:bg-yellow-600 dark:hover:bg-yellow-700">
                 Edit
